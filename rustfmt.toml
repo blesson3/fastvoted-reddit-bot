@@ -1,0 +1,8 @@
+# https://rust-lang.github.io/rustfmt/?version=master&search=#brace_style
+brace_style                  = "AlwaysNextLine"
+# https://rust-lang.github.io/rustfmt/?version=master&search=#control_brace_style
+control_brace_style          = "AlwaysNextLine"
+# https://rust-lang.github.io/rustfmt/?version=master&search=#struct_field_align_threshold
+struct_field_align_threshold = 20
+# https://rust-lang.github.io/rustfmt/?version=master&search=enum_discrim_align_threshold
+enum_discrim_align_threshold = 20
