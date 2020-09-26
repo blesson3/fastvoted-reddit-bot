@@ -1,5 +1,5 @@
 [package]
-name = "fastvoted-reddit-bot"
+name = "fastvoted_reddit_bot"
 version = "0.1.0"
 authors = ["Matt Blessed <m@ttblessed.com>"]
 edition = "2018"
