@@ -135,6 +135,9 @@ async fn check_and_post_content() -> Result<(), Box<dyn Error>>
             let velocity = &comp[4].replace(" |", "");
             let discussion_link = &comp[5];
 
+            // escape the html entities in the title like... &#39; => '
+            let title: &str = &html_escape::decode_html_entities(title);
+
             all_posts.push(Post::new(
                 source.to_string(),
                 link.to_string(),
