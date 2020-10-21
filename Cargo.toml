@@ -22,3 +22,9 @@ regex = "1.3.9"
 log = "0.4.11"
 env_logger = "0.7.1"
 html-escape = "0.2.6"
+
+[package.metadata.deb]
+maintainer-scripts = "debian"
+# I believe the following documentation is wrong about defaults
+# https://github.com/mmstick/cargo-deb/blob/master/systemd.md
+systemd-units      = { enable = true, start = true, restart-after-upgrade = true, stop-on-upgrade = true }

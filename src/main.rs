@@ -60,10 +60,48 @@ impl Post
     }
 }
 
+fn init_log()
+{
+    // if `RUST_LOG` env var not set, default to info
+    if let None = std::env::var("RUST_LOG").ok()
+    {
+        std::env::set_var("RUST_LOG", "info");
+    }
+
+    // check if debug or release build
+    if cfg!(debug_assertions)
+    {
+        env_logger::init();
+    }
+    else
+    {
+        // syslog friendly format
+        // https://github.com/env-logger-rs/env_logger/blob/master/examples/syslog_friendly_format.rs
+        env_logger::builder()
+            .format(|buf, record| {
+                writeln!(
+                    buf,
+                    "<{}>{}: {}",
+                    match record.level()
+                    {
+                        log::Level::Error => 3,
+                        log::Level::Warn => 4,
+                        log::Level::Info => 6,
+                        log::Level::Debug => 7,
+                        log::Level::Trace => 7,
+                    },
+                    record.target(),
+                    record.args()
+                )
+            })
+            .init();
+    }
+}
+
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn Error>>
 {
-    env_logger::init();
+    init_log();
 
     // check for "clear" arg
     let contains_clear_arg = std::env::args()
