@@ -6,28 +6,6 @@ RELEASE_DEB_RPI        = target/aarch64-unknown-linux-gnu/debian/fastvoted_reddi
 DEBUG_BIN              = target/debug/fastvoted_reddit_bot
 RELEASE_BIN            = target/release/fastvoted_reddit_bot
 
-# .PHONY: build-rpi-debug
-# build-rpi-debug: $(SRC) $(RPI_DEBUG_BIN)
-# 	cross build --bins --target aarch64-unknown-linux-gnu
-
-# .PHONY: build-rpi-release
-# build-rpi-release: $(SRC) $(RPI_RELEASE_BIN)
-# 	cross build --bins --target aarch64-unknown-linux-gnu --release
-# 	cargo deb --target aarch64-unknown-linux-gnu --no-build --no-strip --output rpi.deb
-
-# .PHONY: build-debug
-# build-debug: $(SRC) $(DEBUG_BIN)
-
-# .PHONY: build-release
-# build-release: $(SRC) $(RELEASE_BIN)
-# 	cargo build --bins --release
-
-# # only build the deb for rpi release
-# # $(RPI_RELEASE_BIN):
-
-# $(RPI_DEBUG_BIN): $(SRC)
-# 	cargo build --bins
-
 # debug
 
 .PHONY: build-debug
