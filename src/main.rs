@@ -173,6 +173,14 @@ async fn check_and_post_content() -> Result<(), Box<dyn Error>>
             let velocity = &comp[4].replace(" |", "");
             let discussion_link = &comp[5];
 
+            trace!(
+                "source: {}, link: {}, velocity: {}, discussion_link: {}",
+                source,
+                link,
+                velocity,
+                discussion_link
+            );
+
             // escape the html entities in the title like... &#39; => '
             let title: &str = &html_escape::decode_html_entities(title);
 
@@ -205,15 +213,14 @@ async fn check_and_post_content() -> Result<(), Box<dyn Error>>
 
         match post_position
         {
-            None | Some(0) =>
-            {
-                // post nothing
-                all_posts = vec![];
-            }
             Some(x) =>
             {
                 // post all the posts before the one we last posted
                 all_posts = all_posts.into_iter().take(x).collect();
+            }
+            None =>
+            {
+                // post everything
             }
         }
     }
