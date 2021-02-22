@@ -1,3 +1,6 @@
+/// reddit_models
+///
+/// models of reddit api responses mostly generated using https://app.quicktype.io/
 extern crate serde_derive;
 
 use serde::{Deserialize, Serialize};
