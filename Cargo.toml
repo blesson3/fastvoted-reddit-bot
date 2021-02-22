@@ -3,6 +3,7 @@ name = "fastvoted_reddit_bot"
 version = "0.1.0"
 authors = ["Matt Blessed <m@ttblessed.com>"]
 edition = "2018"
+license-file = "LICENSE"
 [[bin]]
 name = "fastvoted_reddit_bot"
 path = "src/main.rs"
