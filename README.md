@@ -32,7 +32,8 @@ $ cargo install cross
 $ make build-release-rpi
 
 # copy the file to the target and install
-$ rsync -avr target/aarch64-unknown-linux-gnu/debian/fastvoted_reddit_bot_*_arm64.deb ubuntu@target-ip:/tmp
-$ ssh ubuntu@target-ip sudo dpkg -i /tmp/fastvoted_reddit_bot_*_arm64.deb
-$ ssh ubuntu@target-ip rm /tmp/fastvoted_reddit_bot_*_arm64.deb
+$ TARGET_SSH_LOGIN="ubuntu@x.x.x.x"
+$ rsync -avr target/aarch64-unknown-linux-gnu/debian/fastvoted_reddit_bot_*_arm64.deb "$TARGET_SSH_LOGIN":/tmp
+$ ssh "$TARGET_SSH_LOGIN" sudo dpkg -i "/tmp/fastvoted_reddit_bot_*_arm64.deb"
+$ ssh "$TARGET_SSH_LOGIN" rm "/tmp/fastvoted_reddit_bot_*_arm64.deb"
 ```
