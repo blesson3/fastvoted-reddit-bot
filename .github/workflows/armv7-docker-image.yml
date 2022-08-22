@@ -36,6 +36,7 @@ jobs:
 
   build-and-push-docker-image:
     runs-on: ubuntu-latest
+    needs: build-armv7
     permissions:
       contents: read
       packages: write
