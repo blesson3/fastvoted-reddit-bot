@@ -1,8 +1,8 @@
 SRC                    = $(shell find src    -type f -name '*.rs') Cargo.toml Cargo.lock
 DEB_SRC                = $(shell find debian -type f)              Cargo.toml
-DEBUG_BIN_RPI          = target/aarch64-unknown-linux-gnu/debug/fastvoted_reddit_bot
-RELEASE_BIN_RPI_MAKETS = target/aarch64-unknown-linux-gnu/release/fastvoted_reddit_bot.makets
-RELEASE_DEB_RPI        = target/aarch64-unknown-linux-gnu/debian/fastvoted_reddit_bot_0.1.0_arm64.deb
+DEBUG_BIN_ARMv7          = target/armv7-unknown-linux-gnueabihf/debug/fastvoted_reddit_bot
+RELEASE_BIN_ARMv7_MAKETS = target/armv7-unknown-linux-gnueabihf/release/fastvoted_reddit_bot.makets
+RELEASE_DEB_ARMv7        = target/armv7-unknown-linux-gnueabihf/debian/fastvoted_reddit_bot_0.1.0_armv7.deb
 DEBUG_BIN              = target/debug/fastvoted_reddit_bot
 RELEASE_BIN            = target/release/fastvoted_reddit_bot
 
@@ -22,22 +22,22 @@ build-release: $(RELEASE_BIN)
 $(RELEASE_BIN): $(SRC)
 	cargo build --bins --release --locked
 
-# debug-rpi
+# debug-armv7
 
-.PHONY: build-debug-rpi
-build-debug-rpi: $(DEBUG_BIN_RPI)
+.PHONY: build-debug-armv7
+build-debug-armv7: $(DEBUG_BIN_ARMv7)
 
-$(DEBUG_BIN_RPI): $(SRC)
-	cross build --bins --target aarch64-unknown-linux-gnu
+$(DEBUG_BIN_ARMv7): $(SRC)
+	cross build --bins --target armv7-unknown-linux-gnueabihf
 
-# release-rpi
+# release-armv7
 
-.PHONY: build-release-rpi
-build-release-rpi: $(RELEASE_DEB_RPI)
+.PHONY: build-release-armv7
+build-release-armv7: $(RELEASE_DEB_ARMv7)
 
-$(RELEASE_BIN_RPI_MAKETS): $(SRC)
-	cross build --bins --target aarch64-unknown-linux-gnu --release --locked
-	touch $(RELEASE_BIN_RPI_MAKETS)
+$(RELEASE_BIN_ARMv7_MAKETS): $(SRC)
+	cross build --bins --target armv7-unknown-linux-gnueabihf --release --locked
+	touch $(RELEASE_BIN_ARMv7_MAKETS)
 
-$(RELEASE_DEB_RPI): $(RELEASE_BIN_RPI_MAKETS) $(DEB_SRC)
-	cargo deb --target aarch64-unknown-linux-gnu --no-build --no-strip
+$(RELEASE_DEB_ARMv7): $(RELEASE_BIN_ARMv7_MAKETS) $(DEB_SRC)
+	cargo deb --target armv7-unknown-linux-gnueabihf --no-build --no-strip

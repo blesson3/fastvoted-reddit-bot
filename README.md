@@ -20,12 +20,15 @@ posts it to the subreddit.
 
 ## install
 
-the rust code is cross-compiled using the 
+the rust code is cross compiled using the
 [cross](https://github.com/rust-embedded/cross) project. cross must be 
 installed. this project uses the nightly toolchain.
 
 ```
-# install cross (if not already)
+# add the `aarch64-unknown-linux-gnu` target (or whatever you're cross compiling too)
+$ rustup target add aarch64-unknown-linux-gnu
+
+# install cross
 $ cargo install cross
 
 # cross compile and generate deb file for linux install
