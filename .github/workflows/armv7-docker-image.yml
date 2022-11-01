@@ -7,7 +7,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: fastvoted_reddit_bot-Linux-armv7
+  IMAGE_NAME: ${{ github.repository }}
   ARMv7_ARTIFACT_NAME: fastvoted_reddit_bot-Linux-armv7
   FASTVOTED_BOT_BIN_PATH: ./target/aarch64-unknown-linux-gnu/release/fastvoted_reddit_bot
 
