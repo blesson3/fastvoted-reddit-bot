@@ -30,12 +30,12 @@ jobs:
           sudo tar -zxf cross-x86_64-unknown-linux-gnu.tar.gz -C /usr/bin/
           sudo chmod 755 /usr/bin/cross /usr/bin/cross-util
 
-      - run: cross build --bins --target aarch64-unknown-linux-musl -Z unstable-options --out-dir /tmp
+      - run: cross build --bins --target aarch64-unknown-linux-musl --release
 
       - uses: actions/upload-artifact@v2
         with:
-          name: ${{ env.ARMv7_ARTIFACT_NAME }}
-          path: /tmp/fastvoted_reddit_bot
+          name: ${{ env.ARMv7_ARTIFACT_NAME }}-musl
+          path: ./target/aarch64-unknown-linux-musl/release/fastvoted_reddit_bot
 
 
   build-aarch64-gnu:
@@ -57,12 +57,12 @@ jobs:
           sudo tar -zxf cross-x86_64-unknown-linux-gnu.tar.gz -C /usr/bin/
           sudo chmod 755 /usr/bin/cross /usr/bin/cross-util
 
-      - run: cross build --bins --target aarch64-unknown-linux-gnu -Z unstable-options --out-dir /tmp
+      - run: cross build --bins --target aarch64-unknown-linux-gnu --release
 
       - uses: actions/upload-artifact@v2
         with:
-          name: ${{ env.ARMv7_ARTIFACT_NAME }}
-          path: /tmp/fastvoted_reddit_bot
+          name: ${{ env.ARMv7_ARTIFACT_NAME }}-gnu
+          path: ./target/aarch64-unknown-linux-gnu/release/fastvoted_reddit_bot
 
   # build-and-push-docker-image:
   #   runs-on: ubuntu-latest
