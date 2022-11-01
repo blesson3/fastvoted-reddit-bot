@@ -1,7 +1,6 @@
 FROM --platform=linux/arm64/v8 alpine:3.12
 
-COPY target/aarch64-unknown-linux-gnu/release/fastvoted_reddit_bot /usr/bin/
-
+COPY target/aarch64-unknown-linux-musl/release/fastvoted_reddit_bot /usr/bin/
 RUN chmod +x /usr/bin/fastvoted_reddit_bot
 
 ENTRYPOINT ["/usr/bin/fastvoted_reddit_bot"]
