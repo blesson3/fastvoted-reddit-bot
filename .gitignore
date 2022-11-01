@@ -3,3 +3,6 @@
 last-posted-id.txt
 fastvoted.com.txt
 .env
+
+# local config files for testing
+config

@@ -1,5 +1,3 @@
-// use async_recursion::async_recursion;
-// use futures::stream::{repeat, Repeat};
 use log::debug;
 use reqwest::Client;
 use reqwest::RequestBuilder;

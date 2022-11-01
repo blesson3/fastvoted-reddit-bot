@@ -1,27 +1,25 @@
 #[macro_use]
-extern crate dotenv_codegen;
-
-#[macro_use]
 extern crate log;
 
-use dotenv;
+use config::Config;
 // use log::{debug, error, info, warn};
 use regex::Regex;
 use std::collections::hash_map::DefaultHasher;
+use std::env;
 use std::error::Error;
 use std::fs::File;
 use std::hash::{Hash, Hasher};
 use std::io::prelude::*;
 use std::io::BufReader;
+use std::path::Path;
 use std::time::Duration;
-use tokio::time::delay_for;
+use tokio::time::sleep;
 
+mod config;
 mod reddit;
 mod reddit_models;
 
 use reddit::RedditApi;
-
-const LAST_POSTED_ID_FILENAME: &str = "last-posted-id.txt";
 
 #[derive(Debug)]
 struct Post
@@ -63,9 +61,9 @@ impl Post
 fn init_log()
 {
     // if `RUST_LOG` env var not set, default to info
-    if let None = std::env::var("RUST_LOG").ok()
+    if let None = env::var("RUST_LOG").ok()
     {
-        std::env::set_var("RUST_LOG", "info");
+        env::set_var("RUST_LOG", "info");
     }
 
     // check if debug or release build
@@ -103,49 +101,53 @@ pub async fn main() -> Result<(), Box<dyn Error>>
 {
     init_log();
 
+    // get config
+    let config_dir = env::var("CONFIG_DIR").expect("environment variable CONFIG_DIR must be set");
+    let config = Config::from_directory(Path::new(&config_dir));
+
     // check for "clear" arg
-    let contains_clear_arg = std::env::args()
+    let contains_clear_arg = env::args()
         .collect::<Vec<String>>()
         .contains(&"clear".to_string());
 
     if contains_clear_arg
     {
-        delete_all_posts().await?;
+        delete_all_posts(&config).await?;
     }
     else
     {
         loop
         {
             // run
-            check_and_post_content().await?;
+            check_and_post_content(&config).await?;
 
             // delay for 15 minutes
             let delay_minutes = 15;
             info!("Delay for {} minutes...", delay_minutes);
-            delay_for(Duration::from_secs(60 * delay_minutes)).await;
+            sleep(Duration::from_secs(60 * delay_minutes)).await;
         }
     }
 
     Ok(())
 }
 
-async fn get_authorized_reddit_api() -> Result<RedditApi, Box<dyn Error>>
+async fn get_authorized_reddit_api(config: &Config) -> Result<RedditApi, Box<dyn Error>>
 {
-    let username = dotenv!("USERNAME");
-    let password = dotenv!("PASSWORD");
-    let client_id = dotenv!("CLIENT_ID");
-    let client_secret = dotenv!("CLIENT_SECRET");
-
     // create new reddit api and authorize it
     let mut reddit_api = RedditApi::new();
     reddit_api
-        .authorize(username, password, client_id, client_secret)
+        .authorize(
+            &config.username,
+            &config.password,
+            &config.client_id,
+            &config.client_secret,
+        )
         .await?;
 
     Ok(reddit_api)
 }
 
-async fn check_and_post_content() -> Result<(), Box<dyn Error>>
+async fn check_and_post_content(config: &Config) -> Result<(), Box<dyn Error>>
 {
     info!("Checking for new content...");
 
@@ -195,7 +197,7 @@ async fn check_and_post_content() -> Result<(), Box<dyn Error>>
     }
 
     let mut last_posted_id_string: String = "".to_string();
-    if let Ok(last_posted_ids_file) = File::open(LAST_POSTED_ID_FILENAME)
+    if let Ok(last_posted_ids_file) = File::open(config.get_last_posted_id_filepath())
     {
         let mut posted_ids_reader = BufReader::new(&last_posted_ids_file);
         posted_ids_reader.read_line(&mut last_posted_id_string)?;
@@ -234,7 +236,7 @@ async fn check_and_post_content() -> Result<(), Box<dyn Error>>
     info!("Found {} new posts", all_posts.len());
 
     // create new reddit api and authorize it
-    let reddit_api = get_authorized_reddit_api().await?;
+    let reddit_api = get_authorized_reddit_api(config).await?;
 
     // post all new posts
     for post in &all_posts
@@ -245,14 +247,18 @@ async fn check_and_post_content() -> Result<(), Box<dyn Error>>
             let fullname = &info[0].data.children[0].data.name;
 
             reddit_api
-                .submit_crosspost("fastvoted", &format!("{}", &post.velocity), &fullname)
+                .submit_crosspost(
+                    &config.subreddit_name,
+                    &format!("{}", &post.velocity),
+                    &fullname,
+                )
                 .await?;
         }
         else
         {
             reddit_api
                 .submit_link(
-                    "fastvoted",
+                    &config.subreddit_name,
                     &format!("{}: {} | {}", &post.source, &post.title, &post.velocity),
                     "",
                     &post.discussion_link,
@@ -265,7 +271,7 @@ async fn check_and_post_content() -> Result<(), Box<dyn Error>>
 
     // write last posted id to file
     {
-        let mut last_posted_ids_file = File::create(LAST_POSTED_ID_FILENAME)?;
+        let mut last_posted_ids_file = File::create(config.get_last_posted_id_filepath())?;
         let id = format!("{}", &all_posts[0].id);
         last_posted_ids_file.write_all(id.as_bytes())?;
         info!("Recorded last posted id");
@@ -274,13 +280,13 @@ async fn check_and_post_content() -> Result<(), Box<dyn Error>>
     Ok(())
 }
 
-async fn delete_all_posts() -> Result<(), Box<dyn Error>>
+async fn delete_all_posts(config: &Config) -> Result<(), Box<dyn Error>>
 {
     // create new reddit api and authorize it
-    let reddit_api = get_authorized_reddit_api().await?;
+    let reddit_api = get_authorized_reddit_api(config).await?;
 
     // get all user posts
-    let user_posts = reddit_api.get_user_posts(dotenv!("USERNAME")).await?;
+    let user_posts = reddit_api.get_user_posts(&config.username).await?;
 
     // delete 'em
     for p in &user_posts.data.children
