@@ -1,4 +1,4 @@
-name: 'armv8: build and push docker image'
+name: 'arm64v8: build and push docker image'
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  ARMv8_ARTIFACT_NAME: fastvoted_reddit_bot-Linux-armv8
+  ARMv8_ARTIFACT_NAME: fastvoted_reddit_bot-Linux-arm64v8
   FASTVOTED_BOT_BIN_PATH: ./target/aarch64-unknown-linux-gnu/release/fastvoted_reddit_bot
 
 jobs:
@@ -79,8 +79,8 @@ jobs:
         with:
           context: .
           push: true
-          file: Dockerfile.armv8
+          file: Dockerfile.arm64v8
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           # https://github.com/docker/buildx/blob/master/docs/reference/buildx_build.md#platform
-          platforms: linux/arm/v8
+          platforms: linux/arm64/v8
