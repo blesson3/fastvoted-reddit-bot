@@ -1,4 +1,4 @@
-name: 'armv7: build and push docker image'
+name: 'armv8: build and push docker image'
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  ARMv7_ARTIFACT_NAME: fastvoted_reddit_bot-Linux-armv7
+  ARMv8_ARTIFACT_NAME: fastvoted_reddit_bot-Linux-armv8
   FASTVOTED_BOT_BIN_PATH: ./target/aarch64-unknown-linux-gnu/release/fastvoted_reddit_bot
 
 jobs:
@@ -35,7 +35,7 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: ${{ env.ARMv7_ARTIFACT_NAME }}
+          name: ${{ env.ARMv8_ARTIFACT_NAME }}
           path: ${{ env.FASTVOTED_BOT_BIN_PATH }}
 
   build-and-push-docker-image:
@@ -52,7 +52,7 @@ jobs:
 
       - uses: actions/download-artifact@v2
         with:
-          name: ${{ env.ARMv7_ARTIFACT_NAME }}
+          name: ${{ env.ARMv8_ARTIFACT_NAME }}
           path: ${{ env.FASTVOTED_BOT_BIN_PATH }}
 
       - name: setup qemu
@@ -79,8 +79,8 @@ jobs:
         with:
           context: .
           push: true
-          file: Dockerfile.armv7
+          file: Dockerfile.armv8
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           # https://github.com/docker/buildx/blob/master/docs/reference/buildx_build.md#platform
-          platforms: linux/arm/v7
+          platforms: linux/arm/v8
