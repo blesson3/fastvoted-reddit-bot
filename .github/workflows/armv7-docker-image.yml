@@ -9,35 +9,9 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: fastvoted_reddit_bot-Linux-armv7
   ARMv7_ARTIFACT_NAME: fastvoted_reddit_bot-Linux-armv7
+  FASTVOTED_BOT_BIN_PATH: ./target/aarch64-unknown-linux-gnu/release/fastvoted_reddit_bot
 
 jobs:
-  build-aarch64-musl:
-    name: build aarch64 musl
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: checkout
-        uses: actions/checkout@v2
-
-      - name: install nightly
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly
-
-      - name: install cross
-        run: |
-          wget https://github.com/cross-rs/cross/releases/download/v0.2.4/cross-x86_64-unknown-linux-gnu.tar.gz
-          sudo tar -zxf cross-x86_64-unknown-linux-gnu.tar.gz -C /usr/bin/
-          sudo chmod 755 /usr/bin/cross /usr/bin/cross-util
-
-      - run: cross build --bins --target aarch64-unknown-linux-musl --release
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: ${{ env.ARMv7_ARTIFACT_NAME }}-musl
-          path: ./target/aarch64-unknown-linux-musl/release/fastvoted_reddit_bot
-
-
   build-aarch64-gnu:
     name: build aarch64 gnu
     runs-on: ubuntu-latest
@@ -61,52 +35,79 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: ${{ env.ARMv7_ARTIFACT_NAME }}-gnu
-          path: ./target/aarch64-unknown-linux-gnu/release/fastvoted_reddit_bot
+          name: ${{ env.ARMv7_ARTIFACT_NAME }}
+          path: ${{ env.FASTVOTED_BOT_BIN_PATH }}
 
-  # build-and-push-docker-image:
+  build-and-push-docker-image:
+    runs-on: ubuntu-latest
+    needs: build-aarch64-gnu
+    permissions:
+      contents: read
+      packages: write
+    timeout-minutes: 10
+    name: build and push docker image
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.ARMv7_ARTIFACT_NAME }}
+          path: ${{ env.FASTVOTED_BOT_BIN_PATH }}
+
+      - name: setup qemu
+        uses: docker/setup-qemu-action@v2
+
+      - name: setup docker buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: login to github container registry
+        uses: docker/login-action@49ed152c8eca782a232dede0303416e8f356c37b # v2.0.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@69f6fc9d46f2f8bf0d5491e4aabe0bb8c6a4678a # v4.0.1
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: build and push docker image
+        uses: docker/build-push-action@c84f38281176d4c9cdb1626ffafcd6b3911b5d94 # v3.1.1
+        with:
+          context: .
+          push: true
+          file: Dockerfile.armv7
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # https://github.com/docker/buildx/blob/master/docs/reference/buildx_build.md#platform
+          platforms: linux/arm/v7
+
+
+  # build-aarch64-musl:
+  #   name: build aarch64 musl
   #   runs-on: ubuntu-latest
-  #   needs: build-armv7
-  #   permissions:
-  #     contents: read
-  #     packages: write
   #   timeout-minutes: 10
-  #   name: build and push docker image
   #   steps:
   #     - name: checkout
   #       uses: actions/checkout@v2
 
-  #     - uses: actions/download-artifact@v2
+  #     - name: install nightly
+  #       uses: actions-rs/toolchain@v1
   #       with:
-  #         name: ${{ env.ARMv7_ARTIFACT_NAME }}
-  #         path: target/armv7-unknown-linux-gnueabihf/fastvoted_reddit_bot
+  #         toolchain: nightly
 
-  #     - name: setup qemu
-  #       uses: docker/setup-qemu-action@v2
+  #     - name: install cross
+  #       run: |
+  #         wget https://github.com/cross-rs/cross/releases/download/v0.2.4/cross-x86_64-unknown-linux-gnu.tar.gz
+  #         sudo tar -zxf cross-x86_64-unknown-linux-gnu.tar.gz -C /usr/bin/
+  #         sudo chmod 755 /usr/bin/cross /usr/bin/cross-util
 
-  #     - name: setup docker buildx
-  #       uses: docker/setup-buildx-action@v2
+  #     - run: cross build --bins --target aarch64-unknown-linux-musl --release
 
-  #     - name: login to github container registry
-  #       uses: docker/login-action@49ed152c8eca782a232dede0303416e8f356c37b # v2.0.0
+  #     - uses: actions/upload-artifact@v2
   #       with:
-  #         registry: ${{ env.REGISTRY }}
-  #         username: ${{ github.actor }}
-  #         password: ${{ secrets.GITHUB_TOKEN }}
-
-  #     - name: extract metadata (tags, labels) for Docker
-  #       id: meta
-  #       uses: docker/metadata-action@69f6fc9d46f2f8bf0d5491e4aabe0bb8c6a4678a # v4.0.1
-  #       with:
-  #         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-
-  #     - name: build and push docker image
-  #       uses: docker/build-push-action@c84f38281176d4c9cdb1626ffafcd6b3911b5d94 # v3.1.1
-  #       with:
-  #         context: .
-  #         push: true
-  #         file: Dockerfile.armv7
-  #         tags: ${{ steps.meta.outputs.tags }}
-  #         labels: ${{ steps.meta.outputs.labels }}
-  #         # https://github.com/docker/buildx/blob/master/docs/reference/buildx_build.md#platform
-  #         platforms: linux/arm/v7
+  #         name: ${{ env.ARMv7_ARTIFACT_NAME }}-musl
+  #         path: ./target/aarch64-unknown-linux-musl/release/fastvoted_reddit_bot
