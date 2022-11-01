@@ -1,5 +1,5 @@
 FROM --platform=linux/arm/v7 alpine:3.12
 
-COPY target/armv7-unknown-linux-gnueabihf/fastvoted_reddit_bot /usr/bin/fastvoted_reddit_bot
+COPY target/aarch64-unknown-linux-gnu/release/fastvoted_reddit_bot /usr/bin/fastvoted_reddit_bot
 
 ENTRYPOINT ["/usr/bin/fastvoted_reddit_bot"]
